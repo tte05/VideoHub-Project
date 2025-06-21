@@ -2,7 +2,9 @@ import { Request, RequestHandler, Response } from "express";
 import User from "../../model/userSchema";
 import { sendResponse } from "../../utils/sendResponse";
 import crypto from "crypto";
-import { hashPassword } from "../../utils/passwordHelper";
+import { compareHashedPassword, hashPassword } from "../../utils/passwordHelper";
+import { use } from "passport";
+import { generateJwtToken } from "../../utils/generateJwtToken";
 
 
 interface RegisterReq extends Request{
@@ -32,3 +34,23 @@ export const signUpUser : RequestHandler = async (req : RegisterReq, res) => {
         return sendResponse(res, 500, false, "Something went wrong");
     }
 }
+
+export const signInUser : RequestHandler = async (req : Request, res) => {
+    try{
+        const {email, password} = req.body;
+        const user = await User.findOne({email});
+        if(!user){
+            return sendResponse(res, 400, false, "User not found");
+        }
+        const matchPassword = await compareHashedPassword(password, user.password);
+        if(!matchPassword){
+            return sendResponse(res, 400,false, "Password does not match");
+        }
+    
+        const jwtToken = await generateJwtToken(user);
+        sendResponse(res, 200, true, "User signed in successfully", {user: jwtToken});
+    }   catch (error){
+        console.error(`Error in signInUser: ${error}`);
+        return sendResponse(res, 500, false, "Internal server error");
+    }
+};
