@@ -1,22 +1,27 @@
 import React from "react";
 import Layout from "../../components/Layout";
 import { Link } from "react-router-dom";
+import { signInUser } from "../../reducers/auth/authReducer";
+import { useDispatch } from "react-redux";
+import type { AppDispatch } from "../../reducers/store";
 
 const SignUp: React.FC = () => {
   const [formData, setFormData] = React.useState({
     email: "",
     password: "",
   });
+  const dispatch = useDispatch<AppDispatch>();
   const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const { name, value } = e.target;
     setFormData((prev) => ({
       ...prev,
-      [name]: [value],
+      [name]: value,
     }));
   };
   const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
-    console.log("submitted ", formData.email, formData.password);
+    const { email, password } = formData;
+    dispatch(signInUser({ email, password }));
   };
   return (
     <Layout>
@@ -41,8 +46,8 @@ const SignUp: React.FC = () => {
                 placeholder="Enter your email"
                 className="mt-1 block w-full px-4 py-3 border border-gray-300 rounded-md shadow-sm focus:ring-green-500
                           focus:border-green-500 sm:text-sm"
-              value={formData.email}
-              onChange={handleChange}
+                value={formData.email}
+                onChange={handleChange}
               />
             </div>
             <div>
@@ -60,8 +65,8 @@ const SignUp: React.FC = () => {
                 placeholder="Enter your password"
                 className="mt-1 block w-full px-4 py-3 border border-gray-300 rounded-md shadow-sm focus:ring-green-500
                           focus:border-green-500 sm:text-sm"
-              value={formData.password}
-              onChange={handleChange}
+                value={formData.password}
+                onChange={handleChange}
               />
             </div>
             <button
